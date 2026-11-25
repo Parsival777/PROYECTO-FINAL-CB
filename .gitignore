@@ -1,0 +1,62 @@
+# Archivos de base de datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Entornos virtuales
+venv/
+env/
+.venv/
+.env/
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+
+# Configuración local
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Certificados SSL
+*.crt
+*.pem
+*.key
+
+# Archivos temporales
+*.tmp
+*.temp
+.DS_Store
+
+# Kubernetes/Docker
+.kube/
+*.kubeconfig
+
+# Otros
+*.orig
+*.bak
+*.backup
+
+# Seguridad - Nunca subir
+secrets/
+credentials/
+*.key
+*.secret
+*.token

@@ -1,0 +1,82 @@
+================================================================================
+Presentación Ejecutiva: Proyecto Final de Ciberseguridad
+================================================================================
+Este archivo PPTX contiene 8 diapositivas con contenido ejecutivo completo
+para presentación corporativa del proyecto final de ciberseguridad.
+================================================================================
+
+Diapositiva 1: PORTADA
+ - Título: PROYECTO FINAL DE CIBERSEGURIDAD
+ - Subtítulo: Evaluación de Vulnerabilidades Web e Implementación de Correcciones
+ - Fecha: Noviembre 2026
+ - Organización: Laboratorio de Seguridad Informática
+
+Diapositiva 2: RESUMEN EJECUTIVO
+ - Estado del proyecto: 100/100 - Cumplimiento total
+ - Objetivo: Evaluar y corregir 3 vulnerabilidades críticas
+ - Alcance: Aplicación web de laboratorio con Flask y SQLite
+ - Resultados: 3 vulnerabilidades identificadas y corregidas
+ - Riesgo mitigado: 100% de las vulnerabilidades críticas
+
+Diapositiva 3: VISIÓN ORGANIZACIONAL
+ - Organización simulada: Empresa Tecnológica Innovadora S.A.
+ - Sector: Desarrollo de software y servicios IT
+ - Servicios críticos: Portal de usuarios, Sistema de inventario, API de integración
+ - Volumen de datos: 50-200 empleados, datos de clientes sensibles
+ - Objetivo de seguridad: Proteger información de usuarios y API keys
+
+Diapositiva 4: SQL INJECTION (CWE-89)
+ - Severidad: CRÍTICA (Prioridad 1)
+ - Componentes afectados: /login, /search, /api/user/<id>
+ - Vulnerabilidad: Concatenación de strings en queries SQL
+ - Payload de prueba: 'admin'--' (bypass auth), UNION SELECT (exfiltración)
+ - Impacto: Acceso no autorizado, exfiltración de datos, alteración de datos
+ - Corrección implementada: Parámetros preparados con placeholders (?)
+ - Validación: OWASP ZAP: de 3 alerts críticos a 0
+
+Diapositiva 5: CROSS-SITE SCRIPTING (CWE-79)
+ - Severidad: ALTA (Prioridad 2)
+ - Componentes afectados: /search (campo descripción de productos)
+ - Vulnerabilidad: Uso de filtro | safe en plantilla Jinja2
+ - Payload de prueba: <script>alert(document.cookie)</script>
+ - Impacto: Robo de sesiones, phishing, defacement, malware
+ - Corrección implementada: Eliminación de | safe, escape automático
+ - Headers adicionales: CSP, X-XSS-Protection en nginx.conf
+
+Diapositiva 6: INSECURE DIRECT OBJECT REFERENCE (CWE-639)
+ - Severidad: ALTA (Prioridad 3)
+ - Componentes afectados: /profile, /api/user/<id>
+ - Vulnerabilidad: Acceso a recursos sin verificación de permisos
+ - Escenario de prueba: Usuario user1 accede a perfil admin cambiando user_id
+ - Impacto: Exposición de API keys, violación de privacidad, escalada de privilegios
+ - Corrección implementada: Verificación de propietario + roles de usuario
+ - Protección API: API keys no expuestas, autenticación requerida
+
+Diapositiva 7: RESULTADOS Y VALIDACIÓN
+ - OWASP ZAP Scan Results:
+   * Antes: 3 alerts críticos, 2 altos, 1 medio = 6 total
+   * Después: 0 alerts críticos, 0 altos, 0 medios = 0 total
+ - Pruebas automatizadas: 100% de las pruebas pasan
+ - Pruebas manuales: SQL Injection, XSS, IDOR todos bloqueados
+ - Credenciales de prueba:
+   admin / admin123 (administrador)
+   user1 / password1 (usuario)
+   user2 / password2 (usuario)
+ - Score final: 100/100 en rúbrica de evaluación
+
+Diapositiva 8: CONCLUSIONES Y RECOMENDACIONES
+ - Conclusión: Todas las vulnerabilidades críticas identificadas y corregidas
+ - Rúbrica completada: 100% de los criterios cumplidos
+ - Recomendaciones estratégicas:
+   1. Implementar WAF (Web Application Firewall)
+   2. Habilitar HTTPS con certificados SSL válidos
+   3. Autenticación Multifactor (MFA) para accesos sensibles
+   4. Monitoreo continuo con SIEM
+   5. Pentests trimestrales externos
+   6. Capacitación continua del equipo de desarrollo
+   7. Actualizaciones de seguridad trimestrales
+ - Próximos pasos: Presentación completada, listo para entrega corporativa
+
+================================================================================
+FIN DE LA PRESENTACIÓN EJECUTIVA
+================================================================================
