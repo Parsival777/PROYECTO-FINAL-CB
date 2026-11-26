@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  vulnerable-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ciberlab_vulnerable_5000
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+    volumes:
+      - ./lab_app.db:/app/lab_app.db
+    networks:
+      - ciberlab-network
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+
+  secure-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ciberlab_secure_5001
+    ports:
+      - "5001:5001"
+    command: python app_secure.py
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - ./lab_app_secure.db:/app/lab_app_secure.db
+    networks:
+      - ciberlab-network
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+
+networks:
+  ciberlab-network:
+    driver: bridge
