@@ -9,7 +9,8 @@ import sqlite3
 from flask import Flask, request, render_template_string, g, redirect, url_for, session
 
 app = Flask(__name__)
-app.secret_key = 'lab_ciberseguridad_2026_secret_key'
+# ✅ NOTA: En producción, usar variable de entorno SECRET_KEY
+app.secret_key = os.environ.get('SECRET_KEY', 'lab_ciberseguridad_2026_secret_key')
 
 DATABASE = 'lab_app.db'
 
@@ -392,6 +393,7 @@ if __name__ == '__main__':
     print("  admin / admin123 (rol: administrador)")
     print("  user1 / password1 (rol: usuario)")
     print("  user2 / password2 (rol: usuario)")
-    print("\nAcceder a: http://localhost:5000")
+    print("\nAcceder a: http://localhost:8080 (vía Nginx)")
+    print("O directamente: http://localhost:5000")
     print("=" * 60)
     app.run(debug=True, host='0.0.0.0', port=5000)

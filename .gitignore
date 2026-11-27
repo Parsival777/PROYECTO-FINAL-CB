@@ -8,6 +8,8 @@ venv/
 env/
 .venv/
 .env/
+venv.ps1
+env.ps1
 
 # Python
 __pycache__/
@@ -19,16 +21,25 @@ __pycache__/
 dist/
 build/
 
+# Logs
+*.log
+logs/
+evidencias/*.log
+
+# Nginx
+nginx-certs/
+var/log/nginx/
+
+# Impuestos estructurales
+.dockerignore
+.docker/
+
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# Logs
-*.log
-logs/
 
 # Temporales
 *.tmp
@@ -41,6 +52,17 @@ logs/
 *.key
 secrets.yaml
 config.yml
+*.secret
+
+# Archivos de generación
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
 
 # Thumbnails
 Thumbs.db
+
+# Archivos de Windows
+desktop.ini
+$.tmp

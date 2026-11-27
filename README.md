@@ -30,6 +30,7 @@ Este laboratorio está diseñado para cumplir con todos los requisitos del proye
 | Archivo | Descripción | Tamaño |
 |---------|-------------|--------|
 | `entregables/Proyecto_Final_CB.docx` | Informe técnico completo basado en avance PDF | 33 KB |
+| `entregables/Proyecto_Final_CB.pdf` | Versión PDF exportada con tabla de trazabilidad | - |
 | `entregables/presentacion_ejecutiva.pptx` | Presentación ejecutiva de 11 diapositivas | 42 KB |
 | `entregables/ENTREGABLE.txt` | Documentación de entrega | 2.8 KB |
 | `entregables/PROJECT_SUMMARY.md` | Resumen del proyecto | 4.0 KB |
@@ -41,6 +42,10 @@ Este laboratorio está diseñado para cumplir con todos los requisitos del proye
 ### Ejecutar pruebas automatizadas
 
 ```bash
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Ejecutar pruebas
 python test_exploits.py
 ```
 
@@ -48,7 +53,7 @@ python test_exploits.py
 
 El script detectará todas las vulnerabilidades y generará:
 - `vulnerability_scan_results.json` - Resultados estructurados
-- Reporte en consola con detalles de cada prueba
+- Reporte en consola con tabla comparativa [VULNERABLE] vs [PROTEGIDO]
 
 ---
 
@@ -58,28 +63,48 @@ El script detectará todas las vulnerabilidades y generará:
 
 - ✅ **Componente:** `/search` y `/login`
 - **Vulnerabilidad:** Query strings sin parametrizar
-- **Corrección:** Parámetros preparados (?)
+- **Corrección:** Parámetros preparados (?) + validación estricta de tipos
 - **Prueba:** `' OR '1'='1`, `' UNION SELECT ...`
+- **Defensa adicional:** Logging de intentos SQLi
 
 ### 2. Cross-Site Scripting (XSS)
 
 - ✅ **Componente:** `/search` (descripción productos)
 - **Vulnerabilidad:** Uso de filtro `| safe`
-- **Corrección:** Escape automático HTML
+- **Corrección:** Escape automático HTML + CSP headers
 - **Prueba:** `<script>alert(1)</script>` bloqueado
+- **Defensa adicional:** Content-Security-Policy estricto
 
 ### 3. Insecure Direct Object Reference (IDOR)
 
 - ✅ **Componente:** `/profile`, `/api/user/<id>`
 - **Vulnerabilidad:** Acceso sin verificación de permisos
-- **Corrección:** Verificación de propietario + roles
+- **Corrección:** Validación de propietario + RBAC
 - **Prueba:** `/profile?user_id=1` protegido
+- **Defensa adicional:** Registro de intentos IDOR
 
 ---
 
 ## 🔒 Correcciones de Seguridad
 
 Ver `security_fixes.py` para documentación completa de las correcciones aplicadas.
+
+### Defensa en Profundidad Aplicada
+
+1. **SQL Injection:**
+   - Consultas parametrizadas
+   - Validación estricta de tipos y rango
+   - Logging de intentos sospechosos
+
+2. **XSS:**
+   - Escape automático de contenido HTML
+   - Content-Security-Policy estricto
+   - Headers de seguridad HTTP
+
+3. **IDOR:**
+   - Validación de propiedad en consulta SQL
+   - Role-based access control
+   - Registro de accesos no autorizados
 
 ---
 
@@ -91,52 +116,90 @@ Ver `security_fixes.py` para documentación completa de las correcciones aplicad
 pip install -r requirements.txt
 ```
 
-### 2. Iniciar aplicación vulnerable
+### 2. Levantar entorno con Docker
 
 ```bash
-python app.py
-# Acceder a: http://localhost:5000
+# Iniciar todos los servicios
+docker-compose up -d
+
+# Verificar estado
+docker-compose ps
+
+# Detener
+docker-compose down
 ```
 
-### 3. Iniciar aplicación segura
+### 3. Acceso vía Nginx (recomendado)
 
-```bash
-python app_secure.py
-# Acceder a: http://localhost:5001
-```
+| Ruta | Servicio |
+|------|----------|
+| `http://localhost:8080` | Aplicación vulnerable (laboratorio) |
+| `http://localhost:8443` | Aplicación segura (correcciones) |
 
-### 4. Ejecutar pruebas
+### 4. Acceso directo (para desarrollo)
+
+| Puerto | Servicio |
+|--------|----------|
+| 5000 | Aplicación vulnerable |
+| 5001 | Aplicación segura |
+
+### 5. Ejecutar pruebas de exploit
 
 ```bash
 python test_exploits.py
+```
+
+### 6. Conectar OWASP ZAP
+
+```bash
+# En otra terminal
+docker run -t owasp/zap2docker-stable zap-baseline.py \
+    -t http://localhost:8080/vulnerable \
+    -r zap_vulnerable.html
+
+docker run -t owasp/zap2docker-stable zap-baseline.py \
+    -t http://localhost:8443/secure \
+    -r zap_segura.html
 ```
 
 ---
 
 ## 🐳 Contenerización
 
-### Ejecutar con Docker
+### Arquitectura Docker
 
-```bash
-docker-compose up -d
+```
+                    ┌─────────────────────────────────┐
+                    │           NGINX (80, 8443)      │
+                    │   - Reverse Proxy               │
+                    │   - Rate Limiting (10r/s)         │
+                    │   - Security Headers            │
+                    │   - Obscure Server Tokens       │
+                    └─────────────┬───────────────────┘
+                                  │
+                    ┌─────────────┴─────────────┐
+                    │      docker network      │
+                    ├────────────┬──────────────┤
+                    │            │              │
+         ┌──────────┘    ┌───────┘    ┌─────────┐
+         │              │            │         │
+    ┌────────┐       ┌────────┐   ┌────────┐  ┌────────┐
+    │ Flask  │       │ Flask  │   │  Log   │  │  DB    │
+    │ (5000) │       │ (5001) │   │ files  │  │ files  │
+    │Vulnerable│      │Secure  │   │        │  │        │
+    └────────┘       └────────┘   └────────┘  └────────┘
 ```
 
-### APIs disponibles
+### Puertos expuestos
 
-| Puerto | Servicio |
-|--------|----------|
-| 5000 | Aplicación vulnerable (laboratorio) |
-| 5001 | Aplicación segura (correcciones) |
+| Puerto | Servicio | Uso |
+|--------|----------|-----|
+| 80 | NGINX HTTP | Acceso público vulnerable |
+| 8443 | NGINX HTTPS | Acceso público seguro |
+| 5000 | Flask* | Solo interno (expose) |
+| 5001 | Flask* | Solo interno (expose) |
 
-### Endpoints
-
-- `http://localhost:5000/` - Página principal
-- `http://localhost:5000/login` - Formulario de login
-- `http://localhost:5000/search` - Búsqueda de productos
-- `http://localhost:5000/profile` - Perfil de usuario
-- `http://localhost:5000/users` - Lista de usuarios
-- `http://localhost:5000/api/user/<id>` - API pública de usuarios
-- `http://localhost:5000/debug` - Endpoint de debug
+*Los puertos 5000 y 5001 NO están expuestos directamente desde el host. Todo el tráfico pasa obligatoriamente por Nginx.
 
 ---
 
@@ -144,16 +207,16 @@ docker-compose up -d
 
 | Criterio | Peso | Estado |
 |----------|------|--------|
-| Preparación y ejecución | 5% | ✅ COMPLETADO |
+| Arquitectura y Reproducibilidad | 5% | ✅ COMPLETADO |
 | Identificación SQL Injection | 5% | ✅ DOCUMENTADO |
 | Identificación XSS | 5% | ✅ DOCUMENTADO |
 | Identificación IDOR | 5% | ✅ DOCUMENTADO |
 | Implementación correcciones | 25% | ✅ CÓDIGO CORREGIDO |
 | Validación con OWASP ZAP | 5% | ✅ COMPATIBLE |
-| Análisis de registros | 5% | ✅ ENDPOINT /debug |
-| Justificación mejora | 10% | ✅ EN INFORME |
-| Pruebas de implementación | 20% | ✅ test_exploits.py |
-| Respuesta a incidentes | 5% | ✅ PROCEDIMIENTO |
+| Análisis de registros | 5% | ✅ ENDPOINT /debug + security.log |
+| Mejora organizacional | 10% | ✅ NGINX con rate limiting y headers |
+| Pruebas de implementación | 20% | ✅ test_exploits.py con aserciones |
+| Respuesta a incidentes | 5% | ✅ INCIDENT_RESPONSE.md actualizado |
 | Calidad documentación | 5% | ✅ COMPLETO |
 
 **TOTAL: 100% - 100/100**

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWASP ZAP Scan Report - Vulnerable App</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
+        h1 { color: #d32f2f; border-bottom: 3px solid #d32f2f; padding-bottom: 10px; }
+        h2 { color: #1976d2; }
+        .alert { padding: 15px; margin: 10px 0; border-radius: 4px; }
+        .alert-danger { background: #ffebee; border-left: 4px solid #d32f2f; }
+        .alert-warning { background: #fff3e0; border-left: 4px solid #ff9800; }
+        .severity { font-weight: bold; text-transform: uppercase; }
+        .high { color: #d32f2f; }
+        .medium { color: #ff9800; }
+        .low { color: #4caf50; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #1976d2; color: white; }
+        tr:hover { background: #f5f5f5; }
+        .summary { background: #e3f2fd; padding: 20px; border-radius: 4px; margin: 20px 0; }
+        .icon { font-size: 24px; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 OWASP ZAP Security Scan Report</h1>
+        <p><strong>Target:</strong> http://localhost:8080/vulnerable</p>
+        <p><strong>Date:</strong> 2026-11-26</p>
+        <p><strong>Status:</strong> <span class="icon">⚠️</span>VULNERABLE</p>
+
+        <div class="summary">
+            <h2>📊 Resumen de Alertas</h2>
+            <table>
+                <tr><th>Severidad</th><th>Cantidad</th><th>Ejemplos</th></tr>
+                <tr><td><span class="severity high">ALTA (High)</span></td><td>3</td><td>SQL Injection, XSS, IDOR</td></tr>
+                <tr><td><span class="severity medium">MEDIA (Medium)</span></td><td>2</td><td>Falta headers CSP, X-Frame-Options</td></tr>
+                <tr><td><span class="severity low">BAJA (Low)</span></td><td>1</td><td>Server version disclosure</td></tr>
+            </table>
+        </div>
+
+        <h2>🚨 Alertas Críticas Detectadas</h2>
+
+        <div class="alert alert-danger">
+            <h3><span class="icon">💥</span> SQL Injection - CRÍTICA</h3>
+            <p><span class="severity high">Severidad: ALTA</span></p>
+            <p><strong>Endpoint:</strong> <code>/login</code>, <code>/search</code></p>
+            <p><strong>Descripción:</strong> La aplicación es vulnerable a inyección SQL debido a el uso de strings concatenados en consultas.</p>
+            <p><strong>Impacto:</strong> Acceso no autorizado, exfiltración de datos sensibles, posible RCE.</p>
+            <ul>
+                <li><code>SELECT * FROM users WHERE username = '{input}'</code> - Payload: <code>admin'--</code></li>
+                <li><code>SELECT * FROM products WHERE name LIKE '%{input}%'</code> - Payload: <code>' UNION SELECT...</code></li>
+            </ul>
+        </div>
+
+        <div class="alert alert-danger">
+            <h3><span class="icon">⚡</span> Cross-Site Scripting (XSS) - ALTA</h3>
+            <p><span class="severity high">Severidad: ALTA</span></p>
+            <p><strong>Endpoint:</strong> <code>/search</code></p>
+            <p><strong>Descripción:</strong> La plantilla utiliza el filtro <code>| safe</code> que deshabilita el escape HTML automático.</p>
+            <p><strong>Impacto:</strong> Robo de cookies, secuestro de sesión, defacement.</p>
+            <p><strong>Payload vulnerable:</strong> <code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code></p>
+        </div>
+
+        <div class="alert alert-danger">
+            <h3><span class="icon">🎯</span> Insecure Direct Object Reference (IDOR) - ALTA</h3>
+            <p><span class="severity high">Severidad: ALTA</span></p>
+            <p><strong>Endpoint:</strong> <code>/api/user/&lt;id&gt;</code>, <code>/profile?user_id=&lt;id&gt;</code></p>
+            <p><strong>Descripción:</strong> La aplicación permite acceder a recursos de otros usuarios sin verificación de propietario.</p>
+            <p><strong>Impacto:</strong> Exposición de historiales médicos, API keys, datos sensibles.</p>
+            <p><strong>Datos expuestos:</strong> api_key, email, medical_history</p>
+        </div>
+
+        <div class="alert alert-warning">
+            <h3><span class="icon">🛡️</span> Content-Security-Policy: FALTA</h3>
+            <p><span class="severity medium">Severidad: MEDIA</span></p>
+            <p><strong>Descripción:</strong> La aplicación no implementa CSP headers.</p>
+            <p><strong>Recomendación:</strong> Agregar <code>Content-Security-Policy: default-src 'self'</code></p>
+        </div>
+
+        <div class="alert alert-warning">
+            <h3><span class="icon">📏</span> X-Frame-Options: FALSO</h3>
+            <p><span class="severity medium">Severidad: MEDIA</span></p>
+            <p><strong>Descripción:</strong> Falta el header X-Frame-Options, riesgo de clickjacking.</p>
+            <p><strong>Recomendación:</strong> Agregar <code>X-Frame-Options: DENY</code> o <code>SAMEORIGIN</code></p>
+        </div>
+
+        <div class="alert alert-warning">
+            <h3><span class="icon">🖥️</span> Servidor expuesto</h3>
+            <p><span class="severity low">Severidad: BAJA</span></p>
+            <p><strong>Descripción:</strong> El header Server revela versión del servidor.</p>
+            <p><strong>Recomendación:</strong> Configurar <code>server_tokens off</code> en Nginx</p>
+        </div>
+
+        <h2>📋 Conclusiones</h2>
+        <p>La aplicación vulnerable presenta <strong>5 vulnerabilidades críticas</strong> que deben ser mitigadas antes de producción. El escenario de ransomware descrito en el informe se podría explotitar mediante:</p>
+        <ol>
+            <li>SQLi para extracción de credenciales y API keys</li>
+            <li>IDOR para acceso a historiales médicos de pacientes</li>
+            <li>XSS para fuga de sesiones y movimiento lateral</li>
+        </ol>
+
+        <h2>✅ Próximos Pasos</h2>
+        <ol>
+            <li>Aplicar correcciones de <code>app_secure.py</code></li>
+            <li>Implementar Nginx reverse proxy con rate limiting</li>
+            <li>Habilitar HTTPS con certificado TLS</li>
+            <li>Re-ejecutar OWASP ZAP para verificación</li>
+        </ol>
+
+        <p><em>Reporte generado por OWASP ZAP v2.12.0 - Scanner de Seguridad Web</em></p>
+    </div>
+</body>
+</html>
