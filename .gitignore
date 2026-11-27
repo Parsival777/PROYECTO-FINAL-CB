@@ -21,10 +21,9 @@ __pycache__/
 dist/
 build/
 
-# Logs
+# Logs de desarrollo (NO logs de auditoría en evidencias/)
 *.log
 logs/
-# evidencias/*.log  # Permite logs de auditoría en evidencias/
 
 # Nginx
 nginx-certs/

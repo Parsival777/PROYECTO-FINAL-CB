@@ -18,10 +18,11 @@ Este laboratorio está diseñado para cumplir con todos los requisitos del proye
 
 1. [Documentación](#documentación)
 2. [Entregables](#entregables)
-3. [Vulnerabilidades Implementadas](#vulnerabilidades-implementadas)
-4. [Correcciones de Seguridad](#correcciones-de-seguridad)
-5. [Pruebas y Validación](#pruebas-y-validación)
-6. [Rúbrica de Evaluación](#rúbrica-de-evaluación)
+3. [Estructura del Proyecto](#estructura-del-proyecto)
+4. [Vulnerabilidades Implementadas](#vulnerabilidades-implementadas)
+5. [Correcciones de Seguridad](#correcciones-de-seguridad)
+6. [Pruebas y Validación](#pruebas-y-validación)
+7. [Rúbrica de Evaluación](#rúbrica-de-evaluación)
 
 ---
 
@@ -29,11 +30,52 @@ Este laboratorio está diseñado para cumplir con todos los requisitos del proye
 
 | Archivo | Descripción | Tamaño |
 |---------|-------------|--------|
-| `entregables/Proyecto_Final_CB.docx` | Informe técnico completo basado en avance PDF | 33 KB |
-| `entregables/Proyecto_Final_CB.pdf` | Versión PDF exportada con tabla de trazabilidad | - |
-| `entregables/presentacion_ejecutiva.pptx` | Presentación ejecutiva de 11 diapositivas | 42 KB |
-| `entregables/ENTREGABLE.txt` | Documentación de entrega | 2.8 KB |
-| `entregables/PROJECT_SUMMARY.md` | Resumen del proyecto | 4.0 KB |
+| `entregables/Proyecto_Final_CB.docx` | Informe técnico completo con tabla de trazabilidad | 44 KB |
+| `entregables/Proyecto_Final_CB.pdf` | Versión PDF exportada con tabla de trazabilidad | 12.8 KB |
+| `entregables/presentacion_ejecutiva.pptx` | Presentación ejecutiva de 9 diapositivas | 37 KB |
+
+---
+
+## 📂 Estructura del Proyecto
+
+```
+├── README.md              # Documentación principal
+├── .env.example           # Plantilla de variables de entorno
+├── .gitignore             # Archivos a ignorar por Git
+├── Dockerfile             # Imagen Docker de aplicación
+├── docker-compose.yml     # Orquestación de contenedores
+├── requirements.txt       # Dependencias con versiones exactas
+│
+├── src/                   # Código fuente
+│   ├── app.py             # Aplicación vulnerable (laboratorio)
+│   ├── app_secure.py      # Aplicación remediada con defensa en profundidad
+│   ├── security_fixes.py  # Documentación de correcciones
+│   ├── lab_app.db         # Base de datos vulnerable
+│   └── lab_app_secure.db  # Base de datos segura
+│
+├── config/                # Configuraciones
+│   └── nginx.conf         # Nginx reverse proxy hardened
+│
+├── tests/                 # Pruebas automatizadas
+│   └── test_exploits.py   # Suite de pruebas (8 pruebas)
+│
+├── docs/                  # Documentación técnica
+│   ├── INCIDENT_RESPONSE.md  # Plan de respuesta a incidentes (5 etapas)
+│   └── PROJECT_SUMMARY.md    # Resumen del proyecto
+│
+├── evidencias/            # Artefactos de auditoría
+│   ├── zap_vulnerable.html  # Reporte OWASP ZAP (5 críticas)
+│   ├── zap_segura.html      # Reporte OWASP ZAP (0 críticas)
+│   ├── vulnerability_scan_results.json  # Resultados de pruebas
+│   ├── security.log         # Logging estructurado JSON
+│   ├── nginx_access.log     # Registros de acceso Nginx
+│   └── nginx_error.log      # Registros de errores Nginx
+│
+└── entregables/           # Entregables finales
+    ├── Proyecto_Final_CB.pdf
+    ├── Proyecto_Final_CB.docx
+    └── presentacion_ejecutiva.pptx
+```
 
 ---
 
@@ -46,13 +88,13 @@ Este laboratorio está diseñado para cumplir con todos los requisitos del proye
 pip install -r requirements.txt
 
 # Ejecutar pruebas
-python test_exploits.py
+python tests/test_exploits.py
 ```
 
 ### Resultado esperado
 
 El script detectará todas las vulnerabilidades y generará:
-- `vulnerability_scan_results.json` - Resultados estructurados
+- `evidencias/vulnerability_scan_results.json` - Resultados estructurados
 - Reporte en consola con tabla comparativa [VULNERABLE] vs [PROTEGIDO]
 
 ---
@@ -87,7 +129,7 @@ El script detectará todas las vulnerabilidades y generará:
 
 ## 🔒 Correcciones de Seguridad
 
-Ver `security_fixes.py` para documentación completa de las correcciones aplicadas.
+Ver `src/security_fixes.py` para documentación completa de las correcciones aplicadas.
 
 ### Defensa en Profundidad Aplicada
 
@@ -133,20 +175,21 @@ docker-compose down
 
 | Ruta | Servicio |
 |------|----------|
-| `http://localhost:8080` | Aplicación vulnerable (laboratorio) |
-| `http://localhost:8443` | Aplicación segura (correcciones) |
+| `http://localhost:80` | Aplicación segura (entrada principal) |
+| `http://localhost:8443` | Aplicación segura HTTPS |
+| `http://localhost:80/vulnerable/` | Aplicación vulnerable (laboratorio) |
 
 ### 4. Acceso directo (para desarrollo)
 
 | Puerto | Servicio |
 |--------|----------|
-| 5000 | Aplicación vulnerable |
-| 5001 | Aplicación segura |
+| 5000 | Aplicación vulnerable (solo interno) |
+| 5001 | Aplicación segura (solo interno) |
 
 ### 5. Ejecutar pruebas de exploit
 
 ```bash
-python test_exploits.py
+python tests/test_exploits.py
 ```
 
 ### 6. Conectar OWASP ZAP
@@ -154,12 +197,12 @@ python test_exploits.py
 ```bash
 # En otra terminal
 docker run -t owasp/zap2docker-stable zap-baseline.py \
-    -t http://localhost:8080/vulnerable \
-    -r zap_vulnerable.html
+    -t http://localhost:80/vulnerable/ \
+    -r evidencias/zap_vulnerable.html
 
 docker run -t owasp/zap2docker-stable zap-baseline.py \
-    -t http://localhost:8443/secure \
-    -r zap_segura.html
+    -t http://localhost:80/secure/ \
+    -r evidencias/zap_segura.html
 ```
 
 ---
@@ -172,7 +215,7 @@ docker run -t owasp/zap2docker-stable zap-baseline.py \
                     ┌─────────────────────────────────┐
                     │           NGINX (80, 8443)      │
                     │   - Reverse Proxy               │
-                    │   - Rate Limiting (10r/s)         │
+                    │   - Rate Limiting (10r/s)       │
                     │   - Security Headers            │
                     │   - Obscure Server Tokens       │
                     └─────────────┬───────────────────┘
@@ -194,7 +237,7 @@ docker run -t owasp/zap2docker-stable zap-baseline.py \
 
 | Puerto | Servicio | Uso |
 |--------|----------|-----|
-| 80 | NGINX HTTP | Acceso público vulnerable |
+| 80 | NGINX HTTP | Acceso público seguro |
 | 8443 | NGINX HTTPS | Acceso público seguro |
 | 5000 | Flask* | Solo interno (expose) |
 | 5001 | Flask* | Solo interno (expose) |

@@ -5,9 +5,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app.py .
-COPY app_secure.py .
-COPY security_fixes.py .
+COPY src/app.py .
+COPY src/app_secure.py .
+COPY src/security_fixes.py .
 
 EXPOSE 5000 5001
 
