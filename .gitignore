@@ -24,7 +24,7 @@ build/
 # Logs
 *.log
 logs/
-evidencias/*.log
+# evidencias/*.log  # Permite logs de auditoría en evidencias/
 
 # Nginx
 nginx-certs/
